@@ -24,10 +24,20 @@ if (!token || !username || !password)
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.post('/webhook/:token', (req, res) => {
-  if (!req.params.token || req.params.token != token) {
-    console.log("Webhook called with invalid or missing token.")
-    return res.status(401).send('Access Denied: Token Invalid\n').end()
+app.post('/', (req, res) => {
+  const auth_header = req.header('authorization')
+  if (!auth_header) {
+    console.log("Webhook called without Authorization header.")
+    return res.status(401).send('Authorization header missing\n').end()
+  }
+  if (!auth_header.startsWith('Bearer ')) {
+    console.log("Webhook called with invalid authentication scheme (must be Bearer).")
+    return res.status(401).send('Invalid authentication scheme\n').end()
+  }
+  const req_token = auth_header.slice(7)
+  if (!req_token || req_token != token) {
+    console.log("Webhook called with invalid token.")
+    return res.status(401).send('Invalid token\n').end()
   }
 
   // Send response back right away if token was valid
@@ -39,7 +49,7 @@ app.post('/webhook/:token', (req, res) => {
   if (!services[image]) return console.log(`Received updated for "${image}" but not configured to handle updates for this image.`)
 
   const service = services[image].service
-  
+
   // Make sure we are logged in to be able to pull the image
   child_process.exec(`${dockerCommand} login -u "${username}" -p "${password}" ${registry}`,
     (error, stdout, stderr) => {
@@ -59,10 +69,10 @@ app.post('/webhook/:token', (req, res) => {
 })
 
 app.all('*', (req, res) => {
-  res.send('')
+  res.status(404).send('Not found\n')
 })
 
 app.listen(process.env.PORT, err => {
   if (err) throw err
-  console.log(`Listening for webhooks on http://localhost:${process.env.PORT}/webhook/${token}`)
+  console.log(`Listening for webhooks on http://localhost:${process.env.PORT}`)
 })
