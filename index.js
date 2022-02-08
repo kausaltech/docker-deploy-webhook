@@ -24,32 +24,13 @@ const slackWebhook = slackWebhookUrl ? new IncomingWebhook(slackWebhookUrl) : nu
 if (!token || !username || !password)
   return console.error("Error: You must set a token, username and password.")
 
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-
-app.post('/', (req, res) => {
-  const auth_header = req.header('authorization')
-  if (!auth_header) {
-    console.log("Webhook called without Authorization header.")
-    return res.status(401).send('Authorization header missing\n').end()
+function updateImage(repository, tag) {
+  const image = `${repository}:${tag}`
+  if (!services[image]) {
+    console.log(`Received update for "${image}" but not configured to handle updates for this image.`)
+    return
   }
-  if (!auth_header.startsWith('Bearer ')) {
-    console.log("Webhook called with invalid authentication scheme (must be Bearer).")
-    return res.status(401).send('Invalid authentication scheme\n').end()
-  }
-  const req_token = auth_header.slice(7)
-  if (!req_token || req_token != token) {
-    console.log("Webhook called with invalid token.")
-    return res.status(401).send('Invalid token\n').end()
-  }
-
-  // Send response back right away if token was valid
-  res.send('OK')
-
-  const payload = req.body
-  const image = `${payload.repository.repo_name}:${payload.push_data.tag}`
-
-  if (!services[image]) return console.log(`Received updated for "${image}" but not configured to handle updates for this image.`)
+  console.log(`Updating image "${image}"`)
 
   const service = services[image].service
 
@@ -86,6 +67,36 @@ app.post('/', (req, res) => {
           }
         })
   })
+}
+
+app.use(bodyParser.json({ type: 'application/vnd.docker.distribution.events.v1+json' }))
+app.use(bodyParser.urlencoded({ extended: true }))
+
+app.post('/', (req, res) => {
+  const auth_header = req.header('authorization')
+  if (!auth_header) {
+    console.log("Webhook called without Authorization header.")
+    return res.status(401).send('Authorization header missing\n').end()
+  }
+  if (!auth_header.startsWith('Bearer ')) {
+    console.log("Webhook called with invalid authentication scheme (must be Bearer).")
+    return res.status(401).send('Invalid authentication scheme\n').end()
+  }
+  const req_token = auth_header.slice(7)
+  if (!req_token || req_token != token) {
+    console.log("Webhook called with invalid token.")
+    return res.status(401).send('Invalid token\n').end()
+  }
+
+  // Send response back right away if token was valid
+  res.send('OK')
+
+  const payload = req.body
+  for (const event of payload.events) {
+    if (event.action === 'push') {
+      updateImage(event.target.repository, event.target.tag)
+    }
+  }
 })
 
 app.all('*', (req, res) => {

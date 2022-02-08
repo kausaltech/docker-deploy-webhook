@@ -1,19 +1,7 @@
 {
-  "production": {
-    "my-org/my-repo:latest": {
-      "service": "my-docker-service"
-    },
-    "my-org/my-other-repo:latest": {
-      "service": "my-other-docker-service"
+  "stage": {
+    "docker.kausal.tech/watch:stage": {
+      "service": "watch_app"
     }
-  },
-  "development": {
-    "my-org/my-repo:development": {
-      "service": "my-docker-service"
-    },
-    "my-org/my-other-repo:development": {
-      "service": "my-other-docker-service"
-    }
-
   }
 }
