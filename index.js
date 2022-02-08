@@ -4,6 +4,7 @@
  */
 process.env.PORT = process.env.PORT || 3000
 
+const fs = require('fs')
 const express = require('express')
 const bodyParser = require('body-parser')
 const child_process = require('child_process')
@@ -11,14 +12,14 @@ const app = express()
 const Package = require('./package.json')
 const services = require(`./config.json`)[process.env.CONFIG || 'production']
 
-if (!process.env.TOKEN || !process.env.USERNAME || !process.env.PASSWORD)
-  return console.error("Error: You must set a TOKEN, USERNAME and PASSWORD as environment variables.")
-
 const dockerCommand = process.env.DOCKER || '/usr/bin/docker'
-const token = process.env.TOKEN || ''
+const token = process.env.TOKEN_FILE ? fs.readFileSync(process.env.TOKEN_FILE, 'utf-8').trim() : process.env.TOKEN || ''
 const username = process.env.USERNAME || ''
-const password = process.env.PASSWORD || ''
+const password = process.env.PASSWORD_FILE ? fs.readFileSync(process.env.PASSWORD_FILE, 'utf-8').trim() : process.env.PASSWORD || ''
 const registry = process.env.REGISTRY || ''
+
+if (!token || !username || !password)
+  return console.error("Error: You must set a token, username and password.")
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
