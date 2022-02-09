@@ -93,7 +93,7 @@ app.post('/', (req, res) => {
 
   const payload = req.body
   for (const event of payload.events) {
-    if (event.action === 'push') {
+    if (event.action === 'push' && event.target.repository && event.target.tag) {
       updateImage(event.target.repository, event.target.tag)
     }
   }
