@@ -1,24 +1,24 @@
 {
   "stage": {
-    "docker.kausal.tech/watch:stage": {
+    "docker.kausal.tech/watch": {
       "service": "watch_app"
     },
-    "docker.kausal.tech/watch-postgres:stage": {
+    "docker.kausal.tech/watch-postgres": {
       "service": "watch_db"
     },
-    "docker.kausal.tech/watch-ui:stage": {
+    "docker.kausal.tech/watch-ui": {
       "service": "watch-ui"
     },
-    "docker.kausal.tech/watch-postgres:stage": {
+    "docker.kausal.tech/watch-postgres": {
       "service": "watch_db"
     },
-    "docker.kausal.tech/paths:stage": {
+    "docker.kausal.tech/paths": {
       "service": "paths_app"
     },
-    "docker.kausal.tech/paths-postgres:stage": {
+    "docker.kausal.tech/paths-postgres": {
       "service": "paths_db"
     },
-    "docker.kausal.tech/paths-ui:stage": {
+    "docker.kausal.tech/paths-ui": {
       "service": "paths-ui"
     }
   }

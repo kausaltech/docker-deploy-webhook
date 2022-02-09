@@ -11,7 +11,8 @@ const child_process = require('child_process')
 const { IncomingWebhook } = require('@slack/webhook')
 
 const app = express()
-const services = require(`./config.json`)[process.env.CONFIG || 'production']
+const environment = process.env.ENVIRONMENT || 'production'
+const services = require(`./config.json`)[environment]
 
 const dockerCommand = process.env.DOCKER || '/usr/bin/docker'
 const token = process.env.TOKEN_FILE ? fs.readFileSync(process.env.TOKEN_FILE, 'utf-8').trim() : process.env.TOKEN || ''
@@ -24,15 +25,23 @@ const slackWebhook = slackWebhookUrl ? new IncomingWebhook(slackWebhookUrl) : nu
 if (!token || !username || !password)
   return console.error("Error: You must set a token, username and password.")
 
+function escapeRegex(string) {
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+function tagIsRecognized(tag) {
+  return RegExp(`^${escapeRegex(environment)}-[0-9]+$`).test(tag)
+}
+
 function updateImage(repository, tag) {
   const image = `${repository}:${tag}`
-  if (!services[image]) {
+  if (!services[repository] || !tagIsRecognized(tag)) {
     console.log(`Received update for "${image}" but not configured to handle updates for this image.`)
     return
   }
   console.log(`Updating image "${image}"`)
 
-  const service = services[image].service
+  const service = services[repository].service
 
   // Make sure we are logged in to be able to pull the image
   child_process.exec(`${dockerCommand} login -u "${username}" -p "${password}" ${registry}`,
@@ -94,7 +103,8 @@ app.post('/', (req, res) => {
   const payload = req.body
   for (const event of payload.events) {
     if (event.action === 'push' && event.target.repository && event.target.tag) {
-      updateImage(event.target.repository, event.target.tag)
+      const repository = `${event.request.host}/${event.target.repository}`
+      updateImage(repository, event.target.tag)
     }
   }
 })
