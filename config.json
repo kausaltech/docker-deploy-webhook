@@ -6,11 +6,11 @@
     "docker.kausal.tech/watch-postgres": {
       "service": "watch_db"
     },
+    "docker.kausal.tech/watch-elasticsearch": {
+      "service": "watch_elasticsearch"
+    },
     "docker.kausal.tech/watch-ui": {
       "service": "watch-ui"
-    },
-    "docker.kausal.tech/watch-postgres": {
-      "service": "watch_db"
     },
     "docker.kausal.tech/paths": {
       "service": "paths_app"
