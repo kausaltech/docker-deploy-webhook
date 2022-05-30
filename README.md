@@ -1,3 +1,8 @@
+**Kausal-specific notes:**
+At the moment, the config is updated by editing `config.json` and then manually deploying the webhook service by
+building the image with `docker build -t docker.kausal.tech/docker-deploy-webhook`, pushing it with
+`docker push docker.kausal.tech/docker-deploy-webhook` and then running the Ansible playbook `docker-registry.yml`.
+
 # Docker Deploy Webhook
 
 A web service for automated deployment of releases from Docker Hub to a Docker Swarm, triggered by a Docker Hub webhook (which can in turn be triggred by pushing to GitHub).
