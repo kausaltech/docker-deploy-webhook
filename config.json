@@ -10,7 +10,7 @@
       "service": "watch_elasticsearch"
     },
     "docker.kausal.tech/watch-ui": {
-      "service": "watch-ui"
+      "service": "watch-ui_app"
     },
     "docker.kausal.tech/paths": {
       "service": "paths_app"
@@ -19,7 +19,7 @@
       "service": "paths_db"
     },
     "docker.kausal.tech/paths-ui": {
-      "service": "paths-ui"
+      "service": "paths-ui_app"
     }
   }
 }
