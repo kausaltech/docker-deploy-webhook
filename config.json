@@ -1,25 +1,25 @@
 {
   "staging": {
     "docker.kausal.tech/watch": {
-      "service": "watch_app"
+      "services": ["watch_app", "watch_celery-beat", "watch_celery-worker"]
     },
     "docker.kausal.tech/watch-postgres": {
-      "service": "watch_db"
+      "services": ["watch_db"]
     },
     "docker.kausal.tech/watch-elasticsearch": {
-      "service": "watch_elasticsearch"
+      "services": ["watch_elasticsearch"]
     },
     "docker.kausal.tech/watch-ui": {
-      "service": "watch-ui_app"
+      "services": ["watch-ui_app"]
     },
     "docker.kausal.tech/paths": {
-      "service": "paths_app"
+      "services": ["paths_app"]
     },
     "docker.kausal.tech/paths-postgres": {
-      "service": "paths_db"
+      "services": ["paths_db"]
     },
     "docker.kausal.tech/paths-ui": {
-      "service": "paths-ui_app"
+      "services": ["paths-ui_app"]
     }
   }
 }

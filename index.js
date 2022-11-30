@@ -12,7 +12,7 @@ const { IncomingWebhook } = require('@slack/webhook')
 
 const app = express()
 const environment = process.env.ENVIRONMENT || 'production'
-const services = require(`./config.json`)[environment]
+const repositories = require(`./config.json`)[environment]
 
 const dockerCommand = process.env.DOCKER || '/usr/bin/docker'
 const token = process.env.TOKEN_FILE ? fs.readFileSync(process.env.TOKEN_FILE, 'utf-8').trim() : process.env.TOKEN || ''
@@ -35,13 +35,13 @@ function tagIsRecognized(tag) {
 
 function updateImage(repository, tag) {
   const image = `${repository}:${tag}`
-  if (!services[repository] || !tagIsRecognized(tag)) {
+  if (!repositories[repository] || !tagIsRecognized(tag)) {
     console.log(`Received update for "${image}" but not configured to handle updates for this image.`)
     return
   }
   console.log(`Updating image "${image}"`)
 
-  const service = services[repository].service
+  const services = repositories[repository].services
 
   // Make sure we are logged in to be able to pull the image
   child_process.exec(`${dockerCommand} login -u "${username}" -p "${password}" ${registry}`,
@@ -51,30 +51,32 @@ function updateImage(repository, tag) {
         return
       }
 
-      // Deploy the image and force a restart of the associated service
-      console.log(`Deploying ${image} to ${service}...`)
-      child_process.exec(`${dockerCommand} service update ${service} --force --with-registry-auth --image=${image}`,
-        (error, stdout, stderr) => {
-          if (error) {
-            const message = `Failed to deploy ${image} to ${service}!`
-            console.error(message)
-            console.error(error)
+      // Deploy the image and force a restart of the associated services
+      for (const service of services) {
+        console.log(`Deploying ${image} to ${service}...`)
+        child_process.exec(`${dockerCommand} service update ${service} --force --with-registry-auth --image=${image}`,
+          (error, stdout, stderr) => {
+            if (error) {
+              const message = `Failed to deploy ${image} to ${service}!`
+              console.error(message)
+              console.error(error)
+              if (slackWebhook) {
+                slackWebhook.send({
+                  text: message,
+                })
+              }
+              return
+            }
+
+            const message = `Deployed ${image} to ${service} successfully and restarted the service.`
+            console.log(message)
             if (slackWebhook) {
               slackWebhook.send({
                 text: message,
               })
             }
-            return
-          }
-
-          const message = `Deployed ${image} to ${service} successfully and restarted the service.`
-          console.log(message)
-          if (slackWebhook) {
-            slackWebhook.send({
-              text: message,
-            })
-          }
-        })
+          })
+      }
   })
 }
 
