@@ -17,11 +17,7 @@
     },
     "docker.kausal.tech/paths-postgres": {
       "services": ["paths_db"]
-    // },
-    // For now, don't deploy paths-ui because what's running on our "staging" server is in fact not the staging version
-    // but the branch `deployment/production-legacy`.
-    // "docker.kausal.tech/paths-ui": {
-    //   "services": ["paths-ui_app"]
-    }
+    },
+    "_comment": "For now, don't deploy paths-ui because what's running on our 'staging' server is in fact not the staging version but the branch `deployment/production-legacy`."
   }
 }
